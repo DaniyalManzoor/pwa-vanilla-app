@@ -1,4 +1,5 @@
 const staticCacheName = "site-static-v1";
+const dynamicCache = "dynamic-site-v1";
 const assets = [
   "/",
   "/index.html",
@@ -37,7 +38,15 @@ self.addEventListener("fetch", (evt) => {
   // console.log("fetch Event", evt);
   evt.respondWith(
     caches.match(evt.request).then((cacheRes) => {
-      return cacheRes || fetch(evt.request);
+      return (
+        cacheRes ||
+        fetch(evt.request).then((fetchRes) => {
+          return caches.open(dynamicCache).then((cache) => {
+            cache.put(evt.request.url, fetchRes.clone);
+            return fetchRes;
+          });
+        })
+      );
     })
   );
 });
