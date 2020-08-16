@@ -10,6 +10,17 @@ const assets = [
   //"https://fonts.googlepis.com/icon?family=Material+Icon",
 ];
 
+//cache size limit fucntion
+const limitCacheSize = (cacheName, size) => {
+  caches.open(cacheName).then((cache) => {
+    cache.keys().then((keys) => {
+      if (keys.length > size) {
+        cache.delete(key[0]).then(limitCacheSize(name, size));
+      }
+    });
+  });
+};
+
 //install services worker
 self.addEventListener("install", (evt) => {
   //console.log("services worker has been installed", evt);
@@ -46,6 +57,7 @@ self.addEventListener("fetch", (evt) => {
           fetch(evt.request).then((fetchRes) => {
             return caches.open(dynamicCacheName).then((cache) => {
               cache.put(evt.request.url, fetchRes.clone());
+              limitCacheSize(dynamicCacheName, 15);
               return fetchRes;
             });
           })
